@@ -9,7 +9,7 @@
 ## Запуск
 
 ```bash
-python -m unittest test_app.py
+python -m unittest test_app.py test_http.py
 python app.py
 ```
 
