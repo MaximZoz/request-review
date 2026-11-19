@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Разбор заявки</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem auto; max-width: 40rem; }
+    textarea { width: 100%; min-height: 6rem; }
+    button { margin-top: 0.5rem; }
+    #draft, #manual { margin-top: 1rem; padding: 0.75rem; border: 1px solid #ccc; }
+    #manual { background: #fff6e8; }
+  </style>
+</head>
+<body>
+  <h1>Разбор входящей заявки</h1>
+  <form id="form">
+    <label for="text">Текст заявки</label>
+    <textarea id="text" name="text"></textarea>
+    <button type="submit">Разобрать</button>
+  </form>
+  <div id="draft" hidden></div>
+  <div id="manual" hidden></div>
+  <script>
+    const form = document.querySelector("#form");
+    const draft = document.querySelector("#draft");
+    const manual = document.querySelector("#manual");
+    let latest = 0;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const requestId = ++latest;
+      const response = await fetch("/api/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: document.querySelector("#text").value })
+      });
+      if (requestId !== latest) return;
+      const body = await response.json();
+      if (!response.ok || !body.ok) {
+        draft.hidden = true;
+        draft.textContent = "";
+        manual.hidden = false;
+        manual.textContent = "Ручной разбор. Агент не подготовил черновик, предыдущий текст очищен.";
+        return;
+      }
+      manual.hidden = true;
+      manual.textContent = "";
+      draft.hidden = false;
+      draft.textContent = body.topic + ": " + body.draft;
+    });
+  </script>
+</body>
+</html>
